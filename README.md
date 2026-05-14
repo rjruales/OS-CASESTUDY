@@ -1,4 +1,4 @@
-# OS-CASESTUDY
+# OS-CASESTUDY-INSTRUCTIONS
 
 How to run the program:
 1. Download 3 files (index.html, app.js and style.css).
