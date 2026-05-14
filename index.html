@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CPU Scheduling Algorithm Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Circular+Std:wght@400;700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Figtree:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" width="32" height="32">
+        <circle cx="12" cy="12" r="11" fill="#1DB954" />
+        <rect x="6" y="8" width="3" height="8" rx="1.5" fill="#000" />
+        <rect x="10.5" y="6" width="3" height="12" rx="1.5" fill="#000" />
+        <rect x="15" y="10" width="3" height="6" rx="1.5" fill="#000" />
+      </svg>
+      <span>CPUify</span>
+    </div>
+
+    <nav class="nav-section">
+      <p class="nav-label">Algorithms</p>
+      <ul>
+        <li class="nav-item active" data-algo="fcfs">
+          <span class="nav-icon">⏱</span> FCFS
+        </li>
+        <li class="nav-item" data-algo="sjf">
+          <span class="nav-icon">⚡</span> SJF
+        </li>
+        <li class="nav-item" data-algo="srt">
+          <span class="nav-icon">🔄</span> SRT
+        </li>
+        <li class="nav-item" data-algo="rr">
+          <span class="nav-icon">🔁</span> Round Robin
+        </li>
+
+        <!-- Priority group with sub-tabs -->
+        <li class="nav-item nav-item-parent" id="nav-priority-parent" data-algo="priority">
+          <span class="nav-icon">🏆</span> Priority
+        </li>
+        <div class="nav-subtabs" id="priority-subtabs">
+          <div class="nav-subtab active" data-algo="priority" id="subtab-priority">Non-Preemptive</div>
+          <div class="nav-subtab" data-algo="priority_preemptive" id="subtab-priority-preemptive">Preemptive</div>
+        </div>
+
+        <li class="nav-item" data-algo="priority_rr">
+          <span class="nav-icon">🎯</span> Priority + RR
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="algo-badge" id="sidebar-algo-name">FCFS</div>
+      <p class="algo-type" id="sidebar-algo-type">Non-Preemptive</p>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="algo-title">First-Come, First-Served</h1>
+        <span class="badge" id="algo-badge">Non-Preemptive</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn-ghost" id="btn-reset">Reset</button>
+        <button class="btn-primary" id="btn-run">▶ Run Simulation</button>
+      </div>
+    </div>
+
+    <!-- Input Panel -->
+    <section class="panel input-panel">
+      <div class="panel-header">
+        <h2>Process Configuration</h2>
+        <div class="input-controls">
+          <div class="field-group" id="quantum-group" style="display:none">
+            <label>Time Quantum</label>
+            <input type="number" id="quantum" value="2" min="1" max="20" />
+          </div>
+          <div class="field-group" id="priority-order-group" style="display:none">
+            <label>Priority Order</label>
+            <select id="priority-order">
+              <option value="lower">Lower = Higher Priority</option>
+              <option value="higher">Higher = Higher Priority</option>
+            </select>
+          </div>
+          <button class="btn-add" id="btn-add-process">+ Add Process</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="process-table" id="process-table">
+          <thead>
+            <tr>
+              <th>Process</th>
+              <th>Arrival Time</th>
+              <th>Burst Time</th>
+              <th class="col-priority" style="display:none">Priority</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="process-tbody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Output Panel (hidden initially) -->
+    <section class="panel output-panel" id="output-panel" style="display:none">
+
+      <!-- Gantt Chart -->
+      <div class="output-block">
+        <h2>Gantt Chart</h2>
+        <div class="gantt-scroll">
+          <div class="gantt-wrap" id="gantt-chart"></div>
+          <div class="gantt-timeline" id="gantt-timeline"></div>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="output-block">
+        <h2>Process Summary</h2>
+        <div class="table-wrap">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th>Process</th>
+                <th>Arrival</th>
+                <th>Burst</th>
+                <th>Finish</th>
+                <th>Waiting Time</th>
+                <th>Turnaround Time</th>
+              </tr>
+            </thead>
+            <tbody id="result-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Averages -->
+      <div class="stats-row" id="stats-row"></div>
+    </section>
+
+    <!-- Empty state -->
+    <div class="empty-state" id="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="38" stroke="#1DB954" stroke-width="2" fill="none" opacity="0.3" />
+          <circle cx="40" cy="40" r="24" stroke="#1DB954" stroke-width="2" fill="none" opacity="0.5" />
+          <circle cx="40" cy="40" r="10" fill="#1DB954" />
+          <line x1="40" y1="2" x2="40" y2="20" stroke="#1DB954" stroke-width="2" opacity="0.5" />
+          <line x1="40" y1="60" x2="40" y2="78" stroke="#1DB954" stroke-width="2" opacity="0.5" />
+          <line x1="2" y1="40" x2="20" y2="40" stroke="#1DB954" stroke-width="2" opacity="0.5" />
+          <line x1="60" y1="40" x2="78" y2="40" stroke="#1DB954" stroke-width="2" opacity="0.5" />
+        </svg>
+      </div>
+      <p>Configure processes and hit <strong>Run Simulation</strong></p>
+      <p class="sub">Results will appear here</p>
+    </div>
+  </main>
+
+  <!-- Now Playing Bar -->
+  <div class="now-playing-bar" id="now-playing-bar">
+    <div class="np-left">
+      <div class="np-cover" id="np-cover">
+        <span id="np-algo-icon">⏱</span>
+      </div>
+      <div class="np-info">
+        <span class="np-name" id="np-algo-name">FCFS</span>
+        <span class="np-artist" id="np-algo-full">First-Come, First-Served</span>
+      </div>
+    </div>
+    <div class="np-center">
+      <div class="np-controls">
+        <span class="np-stat-label">Processes</span>
+        <span class="np-stat-val" id="np-processes">3</span>
+        <span class="np-stat-label">Avg WT</span>
+        <span class="np-stat-val" id="np-avg-wt">—</span>
+        <span class="np-stat-label">Avg TAT</span>
+        <span class="np-stat-val" id="np-avg-tat">—</span>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+    </div>
+    <div class="np-right">
+      <span class="np-type" id="np-type">Non-Preemptive</span>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
